@@ -43,15 +43,17 @@ block content
 
   h1= title
 
-  a(class='button', href='#') Join Game
-  p(class='registered', style='display:none') You are now registered for this game.
-  p(class='notification') 
-  p
-    | Lobby has 
-    span(class='lobbysize') #{lobbysize}
-    |  of&nbsp;
-    span(class='maxlobby') #{maxlobby}
-    |  participants
+  div#lobby
+    div.background
+    a(class='button', href='#') Join Game
+    p(class='registered', style='display:none') You are now registered for this game.
+    p(class='notification') 
+    p
+      | Lobby has 
+      span(class='lobbysize') #{lobbysize}
+      |  of&nbsp;
+      span(class='maxlobby') #{maxlobby}
+      |  participants
 
   script.
     $(function() {
