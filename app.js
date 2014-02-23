@@ -45,7 +45,10 @@ var io = require('socket.io').listen(server);
 var gameClients = new Array();
 var maxClients = 3;
 
-var announceDuration = 3 * 1000; // units = milliseconds, 3 seconds
+var announceGracePeriod = 250; // units = milliseconds, 3 seconds
+
+var announceDuration = 3 * 1000 + announceGracePeriod; // units = milliseconds, 3 seconds
+
 
 var gameDuration = 10 * 1000; // units = milliseconds, 3 seconds
 
@@ -101,8 +104,9 @@ io.sockets.on('connection', function (socket) {
   announceGame = function(socket) {
     console.log('announceGame');
     //notify all clients that game is starting
-    socket.broadcast.emit('game_announce');
-    socket.emit('game_announce');
+    socket.broadcast.emit('game_announce', {grace_period: announceGracePeriod});
+    socket.emit('game_announce', {grace_period: announceGracePeriod});
+    socket.emit('notification', {text:'Game is About to Start!'});
     //begin countdown!
     setTimeout(startGame, announceDuration, socket);
   };
@@ -113,7 +117,6 @@ io.sockets.on('connection', function (socket) {
     //enable accepting of button requests.
     socket.broadcast.emit('game_start');
     socket.emit('game_start');
-    socket.emit('notification', {text:'Game is About to Start!'});
     setTimeout(endGame, gameDuration, socket);
   }
 
