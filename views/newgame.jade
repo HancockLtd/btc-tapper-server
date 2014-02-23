@@ -32,7 +32,7 @@ block content
       $('.lobbysize').text(data.size);
     });
 
-    socket.on('game_start', function (data) {
+    socket.on('game_announce', function (data) {
       // give a little time for the notification to appear
       // before we redirect to the new game window.
       setTimeout( function() {
