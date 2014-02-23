@@ -143,8 +143,8 @@ io.sockets.on('connection', function (socket) {
       var d = new Date();
       var clientTime = d.getTime();
       //add time to client
-      var clientOject = _.findWhere(gameClients, {cid:my_id});
-      clientOject.clickTime=clientTime;
+      var clientObject = _.findWhere(gameClients, {cid:my_id});
+      clientObject.clickTime=clientTime;
 
 
     console.log('Time recorded!');
