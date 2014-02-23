@@ -6,7 +6,7 @@
 var express = require('express')
   , routes = require('./routes')
   , routesNewgame = require('./routes/newgame')
-  , routesgame = require('./routes/game')
+  , routesGame = require('./routes/game')
   , user = require('./routes/user')
   , http = require('http')
   , path = require('path')
