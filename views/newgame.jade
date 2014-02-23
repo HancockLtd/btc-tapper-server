@@ -24,13 +24,13 @@ block content
 
     socket.on('notification', function (data) {
       $('.notification').text(data.text);
-      });
+    });
 
       //event handler for lobby size
 
     socket.on('lobby_size', function (data) {
       $('.lobbysize').text(data.size);
-      });
+    });
 
   h1= title
 
