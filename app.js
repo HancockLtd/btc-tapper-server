@@ -66,6 +66,15 @@ app.locals.max_lobby = maxClients;
 io.sockets.on('connection', function (socket) {
   socket.emit('connected');
 
+  socket.on('auth_user', function (data) {
+    userExists = _.indexOf(gameClients, data.id) !== -1;
+    if (!userExists) {
+      socket.emit('reject_user', {size: gameClients.length});
+    } else {
+      socket.emit('accept_user');
+    }
+  });
+
   socket.on('join_game', function (data) {
     console.log('gameClients',gameClients);
     //set user cookie.
