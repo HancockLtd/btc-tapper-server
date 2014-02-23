@@ -5,6 +5,24 @@ block content
     var socket = io.connect('http://localhost');
     var timeRemaining;
 
+    var intervalArr = new Array();
+
+    function killIntervals() {
+      while(intervalArr.length > 0)
+        clearInterval(intervalArr.pop());
+    };
+
+    gameTimer = function() {
+      console.log('timeRemaining', timeRemaining);
+      if (timeRemaining > 0) {
+        timeRemaining--;
+      } else {
+        killIntervals();
+      }
+      //update element with remaining milliseconds
+      $('.duration span').text(timeRemaining);
+    }
+
     socket.on('connect', function () {
       socket.emit('auth_user', { id: user_id });
     });
@@ -36,7 +54,10 @@ block content
       timeRemaining = data.duration;
       $('.countdown').hide();
       $('.button-box').show();
+
+      intervalArr.push(setInterval(gameTimer, 1));
     });
+
 
     socket.on('current_state', function(data) {
       switch(data.current_state) {
@@ -65,9 +86,9 @@ block content
 
   div(class="button-box" style="display:none")
     p.duration
-      | Time left
+      | Time left&nbsp;
       span
-      | &nbsp;seconds
+      | &nbsp;milliseconds
 
     p Push the button!
     a.big-button this is the big button
