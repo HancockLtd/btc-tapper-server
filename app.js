@@ -113,6 +113,7 @@ io.sockets.on('connection', function (socket) {
     //enable accepting of button requests.
     socket.broadcast.emit('game_start');
     socket.emit('game_start');
+    socket.emit('notification', {text:'Game is About to Start!'});
     setTimeout(endGame, gameDuration, socket);
   }
 
