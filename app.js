@@ -52,11 +52,15 @@ var announceGracePeriod = 250; // units = milliseconds, 3 seconds
 
 var announceDuration = 3 * 1000 + announceGracePeriod; // units = milliseconds, 3 seconds
 
+app.locals.announce_duration = announceDuration;
+
 var clientTimes = new Array();
 var maxClientTimes = 3;
 
 
 var gameDuration = 10 * 1000; // units = milliseconds, 3 seconds
+
+app.locals.game_duration = gameDuration;
 
 app.locals.lobby_size = gameClients.length;
 
@@ -67,12 +71,13 @@ io.sockets.on('connection', function (socket) {
   socket.emit('connected');
 
   socket.on('auth_user', function (data) {
+    console.log('auth_user');
     userExists = _.indexOf(gameClients, data.id) !== -1;
     if (userExists) {
       socket.emit('accept_user');
     } else {
-      socket.emit('reject_user', {size: gameClients.length});
-      socket.emit('notification', {text:'No game or not authorized for this game.'});
+      socket.emit('reject_user');
+      socket.emit('notification', {text:'No game running, or not authorized for this game.'});
     }
   });
 
