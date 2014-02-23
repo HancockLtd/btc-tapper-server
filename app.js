@@ -8,9 +8,11 @@ var express = require('express')
   , routesNewgame = require('./routes/newgame')
   , user = require('./routes/user')
   , http = require('http')
-  , path = require('path');
+  , path = require('path')
+  , _ = require("underscore");
 
 app = require('express')();
+
 
 // all environments
 app.set('port', process.env.PORT || 3000);
@@ -40,14 +42,23 @@ server = http.createServer(app).listen(app.get('port'), function(){
 
 
 var io = require('socket.io').listen(server);
+var gameClients = new Array();
+var maxClients = 3;
+app.locals.lobby_size = gameClients.length;
+
 
 io.sockets.on('connection', function (socket) {
   socket.emit('news', { hello: 'world' });
   socket.on('my other event', function (data) {
+
     console.log(data);
+
+
+
   });
 
   socket.on('join_game', function (data) {
+    console.log('gameClients',gameClients);
     //set user cookie.
     //later this needs to be the bitcoin wallet id.
 
@@ -57,7 +68,20 @@ io.sockets.on('connection', function (socket) {
     } else {
       my_id = data.id;
     }
-    socket.emit('create_user', {id: my_id })
+
+    userExists = _.indexOf(gameClients, my_id) !== -1;
+    if (userExists) {
+      socket.emit('notification', {text:'You are in the game!'});
+    } else if (gameClients.length < maxClients) {
+      socket.emit('create_user', {id: my_id });
+      gameClients.push(my_id);
+      socket.emit('lobby_size', {size: gameClients.length});
+      app.locals.lobby_size = gameClients.length;
+    } else {
+      socket.emit('notification', {text:'Game Full!'});
+    }
+
+   
   });
 
 });
