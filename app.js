@@ -52,6 +52,9 @@ var announceGracePeriod = 250; // units = milliseconds, 3 seconds
 
 var announceDuration = 3 * 1000 + announceGracePeriod; // units = milliseconds, 3 seconds
 
+var clientTimes = new Array();
+var maxClientTimes = 3;
+
 
 var gameDuration = 10 * 1000; // units = milliseconds, 3 seconds
 
@@ -105,6 +108,39 @@ io.sockets.on('connection', function (socket) {
    
   });
 
+  socket.on('button_click', function (data) {
+
+
+    //check to make sure user has not already recorded a time
+    userExists = _.indexOf(clientTimes, data.id) !== -1;
+    if (userExists) {
+
+      console.log('user already hit the button');
+      socket.emit('button_retried', {text:'You have already submitted a time!'});
+
+    } else {
+
+    //create client time object to be added to array
+    var clientTime = new Object();
+    clientTime(data.id).time="";
+
+    //add button click time to array for respected id
+    clientTimes(data.id).push();
+
+    console.log('Time recorded!');
+    socket.emit('time_recorded', {text:'Your time has been recorded!'});
+    }
+
+    //check if this is the last user to hit the button
+    if (clientTimes.length == maxClientTimes) {
+      //call game end function which will handle broadcasting
+      console.log('Last user has hit the button. Let serve the results.');
+      endGame(socket, clientTimes);
+    }
+
+  });
+
+
   announceGame = function(socket, gameClients) {
     console.log('announceGame');
     //notify all clients that game is starting
@@ -125,17 +161,17 @@ io.sockets.on('connection', function (socket) {
     setTimeout(endGame, gameDuration, socket);
   }
 
-  endGame = function(socket, gameClients) {
+  endGame = function(socket, gameClients, clientTimes) {
     console.log('endGame');
     //game ends
 
     socket.broadcast.emit('game_end');
     socket.emit('game_end');
     //disable accepting of button requests.
-    processResults(socket, gameClients);
+    processResults(socket, gameClients, clientTimes);
   }
 
-  processResults = function (socket, gameClients) {
+  processResults = function (socket, gameClients, clientTimes) {
     console.log('processResults');
 
     //compile all user submissions
