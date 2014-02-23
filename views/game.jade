@@ -79,6 +79,8 @@ block content
       };
     });
 
+
+
   h1= title
   p.notification
   p(class="countdown" style="display:none")
@@ -92,4 +94,11 @@ block content
       | &nbsp;milliseconds
 
     p Push the button!
-    a.big-button this is the big button
+    a(class="big-button" href="#") this is the big button
+
+  script.
+    $(function() {
+      $('.big-button').click(function() {
+        socket.emit('button_click', {id: user_id });
+      });
+    });
