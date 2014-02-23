@@ -45,7 +45,7 @@ server = http.createServer(app).listen(app.get('port'), function(){
 
 
 var io = require('socket.io').listen(server);
-var gameClients = new Array();
+app.locals.game_clients = new Array();
 var maxClients = 3;
 
 var announceGracePeriod = 250; // units = milliseconds, 3 seconds
@@ -58,7 +58,7 @@ var gameDuration = 10 * 1000; // units = milliseconds, 3 seconds
 
 app.locals.game_duration = gameDuration;
 
-app.locals.lobby_size = gameClients.length;
+app.locals.lobby_size = app.locals.game_clients.length;
 
 app.locals.max_lobby = maxClients;
 
@@ -68,7 +68,7 @@ io.sockets.on('connection', function (socket) {
 
   socket.on('auth_user', function (data) {
     console.log('auth_user');
-    userExists = _.indexOf(gameClients, data.id) !== -1;
+    userExists = typeof _.findWhere(app.locals.game_clients, {cid: data.id}) !== 'undefined';
     if (userExists) {
       socket.emit('accept_user');
     } else {
@@ -82,7 +82,7 @@ io.sockets.on('connection', function (socket) {
   });
 
  socket.on('join_game', function (data) {
-    console.log('gameClients',gameClients);
+    console.log('gameClients',app.locals.game_clients);
     //set user cookie.
     //later this needs to be the bitcoin wallet id.
 
@@ -93,21 +93,21 @@ io.sockets.on('connection', function (socket) {
       my_id = data.id;
     }
 
-    userExists = typeof _.findWhere(gameClients, {cid:my_id}) !== 'undefined';
+    userExists = typeof _.findWhere(app.locals.game_clients, {cid:my_id}) !== 'undefined';
     if (!userExists) {
-      if (gameClients.length < maxClients) {
+      if (app.locals.game_clients.length < maxClients) {
         socket.emit('create_user', {id: my_id });
         var newClient = new Object();
-        newClient.cid=my_id;
-        newClient.clickTime=false;
-        gameClients.push(newClient);
-        socket.emit('lobby_size', {size: gameClients.length});
-        socket.broadcast.emit('lobby_size', {size: gameClients.length});
-        app.locals.lobby_size = gameClients.length;
+        newClient.cid = my_id;
+        newClient.clickTime = false;
+        app.locals.game_clients.push(newClient);
+        socket.emit('lobby_size', {size: app.locals.game_clients.length});
+        socket.broadcast.emit('lobby_size', {size: app.locals.game_clients.length});
+        app.locals.lobby_size = app.locals.game_clients.length;
 
         //Lobby is now full, start the game!
-        if (gameClients.length == maxClients) {
-          announceGame(socket, gameClients);
+        if (app.locals.game_clients.length == maxClients) {
+          announceGame(socket);
         }
       } else {
         socket.emit('notification', {text:'Game Full!'});
@@ -125,9 +125,9 @@ io.sockets.on('connection', function (socket) {
     my_id = data.id;
 
     //check that the user exists 
-    userExists = typeof _.findWhere(gameClients, {cid:my_id}) !== 'undefined';
+    userExists = typeof _.findWhere(app.locals.game_clients, {cid:my_id}) !== 'undefined';
     //check to make sure user has not already recorded a time
-    clientTimeExists = typeof _.findWhere(gameClients, {cid:my_id, clickTime:false}) == 'undefined';
+    clientTimeExists = typeof _.findWhere(app.locals.game_clients, {cid:my_id, clickTime:false}) == 'undefined';
 
     if (!userExists) {
       console.log("something went teribly wrong");
@@ -142,7 +142,7 @@ io.sockets.on('connection', function (socket) {
       var d = new Date();
       var clientTime = d.getTime();
       //add time to client
-      var clientObject = _.findWhere(gameClients, {cid:my_id});
+      var clientObject = _.findWhere(app.locals.game_clients, {cid:my_id});
       clientObject.clickTime=clientTime;
 
 
@@ -151,17 +151,23 @@ io.sockets.on('connection', function (socket) {
     }
 
     //check if this is the last user to hit the button
-    lastUser = typeof _.findWhere(gameClients, {clickTime:false}) == 'undefined';
+    lastUser = typeof _.findWhere(app.locals.game_clients, {clickTime:false}) == 'undefined';
     if (lastUser) {
       //call game end function which will handle broadcasting
       console.log('Last user has hit the button. Let serve the results.');
-      endGame(socket, gameClients);
+      endGame(socket);
     }
 
   });
 
+  var intervalArr = new Array();
 
-  announceGame = function(socket, gameClients) {
+  function killIntervals() {
+    while(intervalArr.length > 0)
+      clearInterval(intervalArr.pop());
+  };
+
+  announceGame = function(socket) {
     console.log('announceGame');
     //notify all clients that game is starting
     socket.broadcast.emit('game_announce', {grace_period: announceGracePeriod});
@@ -169,29 +175,50 @@ io.sockets.on('connection', function (socket) {
     socket.emit('notification', {text:'Game is About to Start!'});
     socket.broadcast.emit('notification', {text:'Game is About to Start!'});
     //begin countdown!
-    setTimeout(startGame, announceDuration, socket, gameClients);
+    app.locals.game_state = 'announced';
+    app.locals.countdown = announceSeconds;
+
+    //Sync up everyone with countdown events.
+    intervalArr.push(setInterval(countdownGame, 1000, socket));
   };
 
-  startGame = function(socket, gameClients) {
+  countdownGame = function(socket) {
+    console.log('countdownGame');
+    console.log('app.locals.countdown',app.locals.countdown);
+
+    if (app.locals.countdown > 0) {
+      socket.broadcast.emit('countdown', {countdown: app.locals.countdown });
+      socket.emit('countdown', {countdown: app.locals.countdown });
+      app.locals.countdown--;
+    } else {
+      //countdown is finished, start the game.
+      killIntervals();
+      startGame(socket);
+    }
+  }
+
+  startGame = function(socket) {
     console.log('startGame');
     //game starts
     //enable accepting of button requests.
-    socket.broadcast.emit('game_start');
-    socket.emit('game_start');
+    app.locals.game_state = 'active';
+    socket.broadcast.emit('game_start', {duration: gameDuration });
+    socket.emit('game_start', {duration: gameDuration});
+
     setTimeout(endGame, gameDuration, socket);
   }
 
-  endGame = function(socket, gameClients, clientTimes) {
+  endGame = function(socket, clientTimes) {
     console.log('endGame');
     //game ends
 
     socket.broadcast.emit('game_end');
     socket.emit('game_end');
     //disable accepting of button requests.
-    processResults(socket, gameClients, clientTimes);
+    processResults(socket, clientTimes);
   }
 
-  processResults = function (socket, gameClients, clientTimes) {
+  processResults = function (socket, clientTimes) {
     console.log('processResults');
 
     //compile all user submissions
@@ -200,8 +227,8 @@ io.sockets.on('connection', function (socket) {
 
     socket.broadcast.emit('game_results', {});
     socket.emit('game_results', {});
-    gameClients = new Array();
-    app.locals.lobby_size = gameClients.length;
+    app.locals.game_clients = new Array();
+    app.locals.lobby_size = app.locals.game_clients.length;
     console.log ("app.locals.lobby_size", app.locals.lobby_size);
 
     socket.broadcast.emit('game_reset');
