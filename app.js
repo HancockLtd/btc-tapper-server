@@ -50,12 +50,9 @@ var maxClients = 3;
 
 var announceGracePeriod = 250; // units = milliseconds, 3 seconds
 
-var announceDuration = 3 * 1000 + announceGracePeriod; // units = milliseconds, 3 seconds
+var announceSeconds = 3;
 
-app.locals.announce_duration = announceDuration;
-
-
-
+app.locals.game_state = 'inactive';
 
 var gameDuration = 10 * 1000; // units = milliseconds, 3 seconds
 
@@ -80,7 +77,9 @@ io.sockets.on('connection', function (socket) {
     }
   });
 
-  
+  socket.on('game_state', function() {
+    socket.emit('current_state', {state: app.locals.game_state });
+  });
 
  socket.on('join_game', function (data) {
     console.log('gameClients',gameClients);

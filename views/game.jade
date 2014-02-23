@@ -20,6 +20,22 @@ block content
       }, 3000);
     });
 
+    //event handler for notification
+    socket.on('accept_user', function () {
+      // check the game state and set up the game page accordingly.
+      socket.emit('game_state');
+    });
+
+    socket.on('current_state'), function(data) {
+      switch(data.current_state) {
+        case 'inactive':
+          $('.notification').text('game is not running.');
+        break;
+        case 'announced':
+          $('.notification').text('game announced, counting down!');
+        break;
+      }
+    });
   h1= title
   p empty game page
   p.notification
