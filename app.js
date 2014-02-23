@@ -210,17 +210,17 @@ io.sockets.on('connection', function (socket) {
     setTimeout(endGame, gameDuration, socket);
   }
 
-  endGame = function(socket, clientTimes) {
+  endGame = function(socket) {
     console.log('endGame');
     //game ends
 
     socket.broadcast.emit('game_end');
     socket.emit('game_end');
     //disable accepting of button requests.
-    processResults(socket, clientTimes);
+    processResults(socket);
   }
 
-  processResults = function (socket, clientTimes) {
+  processResults = function (socket) {
     console.log('processResults');
 
     //compile all user submissions
