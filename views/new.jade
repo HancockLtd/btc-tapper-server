@@ -8,5 +8,26 @@ block content
       socket.emit('my other event', { my: 'data' });
     });
 
+    socket.on('create_user', function (data) {
+
+      if (!user_id) {
+        user_id = data.id;
+        $.cookie('user_id', user_id);
+      }
+      console.log(user_id);
+      $('.button').hide();
+      $('.registered').show();
+    });
+
   h1= title
   p Welcome to EARTH!! #{title}
+
+  a(class='button', href='#') Join Game
+  p(class='registered', style='display:none') You are now registered for this game.
+
+  script.
+    $(function() {
+      $('.button').click(function() {
+        socket.emit('join_game', { id: user_id });
+      });
+    });
