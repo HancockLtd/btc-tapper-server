@@ -5,7 +5,8 @@
 
 exports.newgame = function(req, res){
   res.render('newgame', { 
-  	title: 'express' ,
+  	title: 'Bitgame' ,
+    maxlobby: app.locals.max_lobby,
   	lobbysize: app.locals.lobby_size,
   });
 };

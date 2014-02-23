@@ -33,7 +33,6 @@ block content
       });
 
   h1= title
-  p Welcome to EARTH!! #{title}
 
   a(class='button', href='#') Join Game
   p(class='registered', style='display:none') You are now registered for this game.
@@ -41,7 +40,10 @@ block content
   p
     | Lobby has 
     span(class='lobbysize') #{lobbysize}
+    |  of
+    span(class='maxlobby') #{maxlobby}
     |  participants
+
   script.
     $(function() {
       $('.button').click(function() {
