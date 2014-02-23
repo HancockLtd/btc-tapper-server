@@ -4,13 +4,20 @@ block content
   script.
     var socket = io.connect('http://localhost');
 
-    socket.on('connected', function (data) {
-      socket.emit('auth_user', { id: my_id });
+    socket.on('connect', function () {
+      socket.emit('auth_user', { id: user_id });
     });
 
     //event handler for notification
     socket.on('notification', function (data) {
       $('.notification').text(data.text);
+    });
+
+    //event handler for notification
+    socket.on('reject_user', function () {
+      setTimeout( function() {
+        window.open('/newgame.html','_self');
+      }, 3000);
     });
 
   h1= title
