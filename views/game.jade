@@ -133,5 +133,6 @@ block content
     $(function() {
       $('.big-button').click(function() {
         socket.emit('button_click', {id: user_id });
+        $('.big-button').hide();
       });
     });
