@@ -46,5 +46,19 @@ io.sockets.on('connection', function (socket) {
   socket.on('my other event', function (data) {
     console.log(data);
   });
+
+  socket.on('join_game', function (data) {
+    //set user cookie.
+    //later this needs to be the bitcoin wallet id.
+
+    if (!data.id) {
+      //if the user hasn't sent an id, generate a new one.
+      my_id = Math.random()*100000;
+    } else {
+      my_id = data.id;
+    }
+    socket.emit('create_user', {id: my_id })
+  });
+
 });
 
