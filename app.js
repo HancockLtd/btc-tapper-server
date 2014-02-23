@@ -120,7 +120,7 @@ io.sockets.on('connection', function (socket) {
   });
 
   socket.on('button_click', function (data) {
-
+    console.log('button_click');
     //set variables
     my_id = data.id;
 
@@ -150,6 +150,7 @@ io.sockets.on('connection', function (socket) {
     socket.emit('time_recorded', {text:'Your time has been recorded!'});
     }
 
+    /*
     //check if this is the last user to hit the button
     lastUser = typeof _.findWhere(app.locals.game_clients, {clickTime:false}) == 'undefined';
     if (lastUser) {
@@ -157,6 +158,7 @@ io.sockets.on('connection', function (socket) {
       console.log('Last user has hit the button. Let serve the results.');
       endGame(socket);
     }
+  */
 
   });
 
