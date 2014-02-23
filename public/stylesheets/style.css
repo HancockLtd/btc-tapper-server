@@ -1,8 +1,37 @@
 body {
   padding: 50px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  color: white;
+  background: black;
 }
 
 a {
   color: #00B7FF;
+}
+
+#lobby .background {
+  background: url(/images/lobby.png);
+}
+
+.background, #background {
+  background-size: cover;
+  -webkit-background-size: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  bottom: 0;
+  z-index: -1;
+}
+
+#background.results-bg {
+  background: url(/images/results.png);
+}
+
+#background.countdown-bg {
+  background: url(/images/ready.png);
+}
+
+#background.gameplay-bg {
+  background: url(/images/gameplay.png);
 }
