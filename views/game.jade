@@ -53,6 +53,8 @@ block content
     socket.on('countdown', function (data) {
       $('.countdown').show();
       $('.countdown .number').text(data.countdown);
+      $('#background').removeClass();
+      $('#background').addClass('countdown-bg');
     });
 
     socket.on('game_start', function (data) {
@@ -61,6 +63,8 @@ block content
       $('.button-box').show();
 
       intervalArr.push(setInterval(gameTimer, timerIncrements));
+      $('#background').removeClass();
+      $('#background').addClass('gameplay-bg');
     });
 
     socket.on('game_end', function () {
@@ -74,6 +78,8 @@ block content
       $('.results .table').text(JSON.stringify(data.players));
       $('.notification').text('Results');
       $('.results').show();
+      $('#background').removeClass();
+      $('#background').addClass('results-bg');
     });
 
     socket.on('current_state', function(data) {
@@ -98,26 +104,30 @@ block content
 
 
   h1= title
-  p.notification
-  p(class="countdown" style="display:none")
-    span(class="number") #{countdown}
-    | &nbsp;seconds to go
 
-  div(class="results" style="display:none")
-    p
-      | Winner is user #
-      span.winner
-    p.table
-    a(class="newgame" href="/newgame.html") Play again
+  div#game
+    div(id="background")
 
-  div(class="button-box" style="display:none")
-    p.duration
-      | Time left&nbsp;
-      span
-      | &nbsp;milliseconds
+    p.notification
+    p(class="countdown" style="display:none")
+      span(class="number") #{countdown}
+      | &nbsp;seconds to go
 
-    p Push the button!
-    a(class="big-button" href="#") this is the big button
+    div(class="results" style="display:none")
+      p
+        | Winner is user #
+        span.winner
+      p.table
+      a(class="newgame" href="/newgame.html") Play again
+
+    div(class="button-box" style="display:none")
+      p.duration
+        | Time left&nbsp;
+        span
+        | &nbsp;milliseconds
+
+      p Push the button!
+      a(class="big-button" href="#") this is the big button
 
   script.
     $(function() {
