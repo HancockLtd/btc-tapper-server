@@ -4,6 +4,7 @@ block content
   script.
     var socket = io.connect('http://localhost');
     var timeRemaining;
+    var timerIncrements = 50;
 
     var intervalArr = new Array();
 
@@ -15,7 +16,7 @@ block content
     gameTimer = function() {
       console.log('timeRemaining', timeRemaining);
       if (timeRemaining > 0) {
-        timeRemaining--;
+        timeRemaining -= timerIncrements;
       } else {
         killIntervals();
       }
@@ -55,7 +56,7 @@ block content
       $('.countdown').hide();
       $('.button-box').show();
 
-      intervalArr.push(setInterval(gameTimer, 1));
+      intervalArr.push(setInterval(gameTimer, timerIncrements));
     });
 
 
