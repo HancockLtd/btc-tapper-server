@@ -90,7 +90,7 @@ io.sockets.on('connection', function (socket) {
 
         //Lobby is now full, start the game!
         if (gameClients.length == maxClients) {
-          announceGame(socket);
+          announceGame(socket, gameClients);
         }
       } else {
         socket.emit('notification', {text:'Game Full!'});
@@ -102,17 +102,18 @@ io.sockets.on('connection', function (socket) {
    
   });
 
-  announceGame = function(socket) {
+  announceGame = function(socket, gameClients) {
     console.log('announceGame');
     //notify all clients that game is starting
     socket.broadcast.emit('game_announce', {grace_period: announceGracePeriod});
     socket.emit('game_announce', {grace_period: announceGracePeriod});
     socket.emit('notification', {text:'Game is About to Start!'});
+    socket.broadcast.emit('notification', {text:'Game is About to Start!'});
     //begin countdown!
-    setTimeout(startGame, announceDuration, socket);
+    setTimeout(startGame, announceDuration, socket, gameClients);
   };
 
-  startGame = function(socket) {
+  startGame = function(socket, gameClients) {
     console.log('startGame');
     //game starts
     //enable accepting of button requests.
@@ -121,17 +122,17 @@ io.sockets.on('connection', function (socket) {
     setTimeout(endGame, gameDuration, socket);
   }
 
-  endGame = function(socket) {
+  endGame = function(socket, gameClients) {
     console.log('endGame');
     //game ends
 
     socket.broadcast.emit('game_end');
     socket.emit('game_end');
     //disable accepting of button requests.
-    processResults(socket);
+    processResults(socket, gameClients);
   }
 
-  processResults = function (socket) {
+  processResults = function (socket, gameClients) {
     console.log('processResults');
 
     //compile all user submissions
@@ -140,7 +141,15 @@ io.sockets.on('connection', function (socket) {
 
     socket.broadcast.emit('game_results', {});
     socket.emit('game_results', {});
+    gameClients = new Array();
+    app.locals.lobby_size = gameClients.length;
+    console.log ("app.locals.lobby_size", app.locals.lobby_size);
 
+    socket.broadcast.emit('game_reset');
+    socket.emit('game_reset');
+
+    socket.emit('lobby_size', {size: app.locals.lobby_size});
+    socket.broadcast.emit('lobby_size', {size: app.locals.lobby_size});
   }
 
 });
