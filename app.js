@@ -68,10 +68,10 @@ io.sockets.on('connection', function (socket) {
 
   socket.on('auth_user', function (data) {
     userExists = _.indexOf(gameClients, data.id) !== -1;
-    if (!userExists) {
-      socket.emit('reject_user', {size: gameClients.length});
-    } else {
+    if (userExists) {
       socket.emit('accept_user');
+    } else {
+      socket.emit('reject_user', {size: gameClients.length});
     }
   });
 
