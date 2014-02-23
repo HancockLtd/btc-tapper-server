@@ -72,6 +72,7 @@ io.sockets.on('connection', function (socket) {
       socket.emit('accept_user');
     } else {
       socket.emit('reject_user', {size: gameClients.length});
+      socket.emit('notification', {text:'No game or not authorized for this game.'});
     }
   });
 

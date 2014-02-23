@@ -8,5 +8,11 @@ block content
       socket.emit('auth_user', { id: my_id });
     });
 
+    //event handler for notification
+    socket.on('notification', function (data) {
+      $('.notification').text(data.text);
+    });
+
   h1= title
   p empty game page
+  p.notification
