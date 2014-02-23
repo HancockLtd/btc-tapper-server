@@ -85,6 +85,7 @@ io.sockets.on('connection', function (socket) {
         socket.emit('create_user', {id: my_id });
         gameClients.push(my_id);
         socket.emit('lobby_size', {size: gameClients.length});
+        socket.broadcast.emit('lobby_size', {size: gameClients.length});
         app.locals.lobby_size = gameClients.length;
 
         //Lobby is now full, start the game!
