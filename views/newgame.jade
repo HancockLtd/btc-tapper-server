@@ -59,6 +59,7 @@ block content
     $(function() {
       $('.button').click(function() {
         socket.emit('join_game', { id: user_id });
+        $('.button').hide();
       });
 
     });
