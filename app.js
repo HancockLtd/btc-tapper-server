@@ -54,7 +54,7 @@ var announceSeconds = 3;
 
 app.locals.game_state = 'inactive';
 
-var gameDuration = 10 * 1000; // units = milliseconds, 3 seconds
+var gameDuration = 6 * 1000; // units = milliseconds, 3 seconds
 
 app.locals.game_duration = gameDuration;
 
@@ -213,7 +213,6 @@ io.sockets.on('connection', function (socket) {
   endGame = function(socket) {
     console.log('endGame');
     //game ends
-
     socket.broadcast.emit('game_end');
     socket.emit('game_end');
     //disable accepting of button requests.
@@ -222,13 +221,43 @@ io.sockets.on('connection', function (socket) {
 
   processResults = function (socket) {
     console.log('processResults');
+    var game_clients = app.locals.game_clients;
 
     //compile all user submissions
+    var sum = _.reduce(game_clients, function(memo, obj){ 
+      return memo + obj.clickTime; 
+    }, 0);
+
+    average = sum / game_clients.length;
+
+    difference = new Array();
+    _.each(game_clients, function(obj, key) {
+      my_id = obj.cid;
+      my_difference = Math.abs( obj.clickTime - average);
+      difference.push({
+        cid: my_id, 
+        difference: my_difference 
+      });
+    });
+
+    result = _.sortBy(difference, function(obj){
+      return obj.difference;
+    });
+
     //choose a winner
+    winner_id = result[0].cid;
+
     //send results data to all players
 
-    socket.broadcast.emit('game_results', {});
-    socket.emit('game_results', {});
+    socket.broadcast.emit('game_results', {winner: winner_id, 
+      difference: difference,
+      players: game_clients
+    });
+    socket.emit('game_results', {
+      winner: winner_id, 
+      difference: difference,
+      players: game_clients
+    });
     app.locals.game_clients = new Array();
     app.locals.lobby_size = app.locals.game_clients.length;
     console.log ("app.locals.lobby_size", app.locals.lobby_size);

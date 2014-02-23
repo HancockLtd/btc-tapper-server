@@ -46,6 +46,10 @@ block content
       socket.emit('game_state');
     });
 
+    socket.on('game_results', function (data) {
+      console.log ("game results",data);
+    });
+
     socket.on('countdown', function (data) {
       $('.countdown').show();
       $('.countdown .number').text(data.countdown);
@@ -59,6 +63,18 @@ block content
       intervalArr.push(setInterval(gameTimer, timerIncrements));
     });
 
+    socket.on('game_end', function () {
+      $('.button-box').hide();
+      $('.notification').text('Game over, processing results.');
+    });
+
+    socket.on('game_results', function (data) {
+      $('.results .winner').text(data.winner);
+
+      $('.results .table').text(JSON.stringify(data.players));
+      $('.notification').text('Results');
+      $('.results').show();
+    });
 
     socket.on('current_state', function(data) {
       switch(data.current_state) {
@@ -86,6 +102,13 @@ block content
   p(class="countdown" style="display:none")
     span(class="number") #{countdown}
     | &nbsp;seconds to go
+
+  div(class="results" style="display:none")
+    p
+      | Winner is user #
+      span.winner
+    p.table
+    a(class="newgame" href="/newgame.html") Play again
 
   div(class="button-box" style="display:none")
     p.duration
