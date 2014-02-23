@@ -3,6 +3,7 @@ extends layout
 block content
   script.
     var socket = io.connect('http://localhost');
+    var timeRemaining;
 
     socket.on('connect', function () {
       socket.emit('auth_user', { id: user_id });
@@ -17,7 +18,7 @@ block content
     socket.on('reject_user', function () {
       setTimeout( function() {
         window.open('/newgame.html','_self');
-      }, 3000);
+      }, 2000);
     });
 
     //event handler for notification
@@ -26,16 +27,47 @@ block content
       socket.emit('game_state');
     });
 
-    socket.on('current_state'), function(data) {
+    socket.on('countdown', function (data) {
+      $('.countdown').show();
+      $('.countdown .number').text(data.countdown);
+    });
+
+    socket.on('game_start', function (data) {
+      timeRemaining = data.duration;
+      $('.countdown').hide();
+      $('.button-box').show();
+    });
+
+    socket.on('current_state', function(data) {
       switch(data.current_state) {
         case 'inactive':
           $('.notification').text('game is not running.');
         break;
         case 'announced':
           $('.notification').text('game announced, counting down!');
+          $('.countdown').show();
         break;
-      }
+        case 'active':
+          $('.notification').text('game running!');
+        break;
+        case 'results':
+          $('.notification').text('processing results...');
+          window.open('/results.html', '_self');
+        break;
+      };
     });
+
   h1= title
-  p empty game page
   p.notification
+  p(class="countdown" style="display:none")
+    span(class="number") #{countdown}
+    | &nbsp;seconds to go
+
+  div(class="button-box" style="display:none")
+    p.duration
+      | Time left
+      span
+      | &nbsp;seconds
+
+    p Push the button!
+    a.big-button this is the big button
