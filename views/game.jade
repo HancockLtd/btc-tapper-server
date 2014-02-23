@@ -1,5 +1,12 @@
 extends layout
 
 block content
+  script.
+    var socket = io.connect('http://localhost');
+
+    socket.on('connected', function (data) {
+      socket.emit('auth_user', { id: my_id });
+    });
+
   h1= title
   p empty game page
