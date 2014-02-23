@@ -54,8 +54,7 @@ var announceDuration = 3 * 1000 + announceGracePeriod; // units = milliseconds, 
 
 app.locals.announce_duration = announceDuration;
 
-var clientTimes = new Array();
-var maxClientTimes = 3;
+
 
 
 var gameDuration = 10 * 1000; // units = milliseconds, 3 seconds
@@ -81,7 +80,9 @@ io.sockets.on('connection', function (socket) {
     }
   });
 
-  socket.on('join_game', function (data) {
+  
+
+ socket.on('join_game', function (data) {
     console.log('gameClients',gameClients);
     //set user cookie.
     //later this needs to be the bitcoin wallet id.
@@ -93,11 +94,14 @@ io.sockets.on('connection', function (socket) {
       my_id = data.id;
     }
 
-    userExists = _.indexOf(gameClients, my_id) !== -1;
+    userExists = typeof _.findWhere(gameClients, {cid:my_id}) !== 'undefined';
     if (!userExists) {
       if (gameClients.length < maxClients) {
         socket.emit('create_user', {id: my_id });
-        gameClients.push(my_id);
+        var newClient = new Object();
+        newClient.cid=my_id;
+        newClient.clickTime=false;
+        gameClients.push(newClient);
         socket.emit('lobby_size', {size: gameClients.length});
         socket.broadcast.emit('lobby_size', {size: gameClients.length});
         app.locals.lobby_size = gameClients.length;
@@ -118,32 +122,41 @@ io.sockets.on('connection', function (socket) {
 
   socket.on('button_click', function (data) {
 
+    //set variables
+    my_id = data.id;
 
+    //check that the user exists 
+    userExists = typeof _.findWhere(gameClients, {cid:my_id}) !== 'undefined';
     //check to make sure user has not already recorded a time
-    userExists = _.indexOf(clientTimes, data.id) !== -1;
-    if (userExists) {
+    clientTimeExists = typeof _.findWhere(gameClients, {cid:my_id, clickTime:false}) == 'undefined';
+
+    if (!userExists) {
+      console.log("something went teribly wrong");
+    } else if (clientTimeExists) {
 
       console.log('user already hit the button');
       socket.emit('button_retried', {text:'You have already submitted a time!'});
 
     } else {
 
-    //create client time object to be added to array
-    var clientTime = new Object();
-    clientTime(data.id).time="";
+      //get time
+      var d = new Date();
+      var clientTime = d.getTime();
+      //add time to client
+      var clientOject = _.findWhere(gameClients, {cid:my_id});
+      clientOject.clickTime=clientTime;
 
-    //add button click time to array for respected id
-    clientTimes(data.id).push();
 
     console.log('Time recorded!');
     socket.emit('time_recorded', {text:'Your time has been recorded!'});
     }
 
     //check if this is the last user to hit the button
-    if (clientTimes.length == maxClientTimes) {
+    lastUser = typeof _.findWhere(gameClients, {clickTime:false}) == 'undefined';
+    if (lastUser) {
       //call game end function which will handle broadcasting
       console.log('Last user has hit the button. Let serve the results.');
-      endGame(socket, clientTimes);
+      endGame(socket, gameClients);
     }
 
   });
